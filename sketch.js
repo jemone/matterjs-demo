@@ -8,27 +8,75 @@ var Engine = Matter.Engine;
     Render = Matter.Render;
     World = Matter.World;
     Bodies = Matter.Bodies;
+    Constraint = Matter.Constraint;
+    MouseConstraint = Matter.MouseConstraint;
+    Mouse = Matter.Mouse;
 
 var engine;
-var box1;
-var ground1, ground2;
-var boxes =[];
-// var circle;
-// var polygon;
+var ground;
+var constraint1;
+var poly1A;
+var poly1B;
+
+var poly2;
+var constraint2;
+
+var poly3;
+var constraint3;
+
+var canvas;
+
 
 function setup(){
     
-    createCanvas(900,600);
+    canvas = createCanvas(900,600);
     engine = Engine.create();
 
-    box1 = Bodies.rectangle(200,200, 80, 80, {restitution: 0.8, friction: 0.01});
-    // polygon = Bodies.polygon(550, 0, 7, 15, {restitution: 0.8, friction: 0.01});
-    // circle = Bodies.circle(500,0,10, {restitution: 0.8, friction: 0.01});
+    poly1A = Bodies.polygon(700,100, 6, 20);
+    poly1B = Bodies.polygon(700,250, 1, 50);
 
-    ground1 = Bodies.rectangle(100,200,500,10, {isStatic: true, angle:Math.PI*0.06});
-    ground2 = Bodies.rectangle(500,500,500,10, {isStatic: true, angle:Math.PI*-0.06});
-     
-    World.add(engine.world, [box1, ground1, ground2]);
+    poly2 = Bodies.polygon(200,200, 5, 40);
+    poly3 = Bodies.polygon(400,100, 4, 30);
+
+    constraint1 = Constraint.create({
+        bodyA: poly1A,
+        pointA: {x:0, y:+20},
+        bodyB: poly1B,
+        pointB: {x:0, y:-50},
+        stiffness: 0.01
+    });
+
+    ground = Bodies.rectangle(width/2,height-20,800,10, {isStatic: true, angle:0});
+
+    World.add(engine.world, [ground, poly1A, poly1B, constraint1]);
+
+    constraint2 = Constraint.create({
+        pointA: {x:150, y:50},
+        bodyB: poly2,
+        pointB: {x:0, y:-20},
+        length:300
+    });
+
+    World.add(engine.world, [poly2,  constraint2]);
+
+      constraint3 = Constraint.create({
+        pointA: {x:400, y:120},
+        bodyB: poly3,
+        pointB: {x:0, y:-10},
+        stiffness: 0.001,
+        dumping: 0.005
+    });
+
+    World.add(engine.world, [poly3,  constraint3]);
+
+    var mouse = Mouse.create(canvas.elt);
+    var mouseParams = {
+        mouse: mouse
+    };
+    
+    var mouseConstraint = MouseConstraint.create(engine, mouseParams);
+    mouseConstraint.mouse.pixelRatio = pixelDensity();
+    World.add(engine.world, mouseConstraint);
 
 }
 
@@ -37,23 +85,19 @@ function draw(){
     Engine.update(engine);  
 
     fill(255);
-    drawVertices(box1.vertices);
+    drawVertices(poly1A.vertices);
+    drawVertices(poly1B.vertices);
+    drawVertices(poly2.vertices);
+    drawVertices(poly3.vertices);
 
-   generateObject(width/2,0);
-
-    for (var i =0; i<boxes.length; i++){
-        drawVertices(boxes[i].vertices);
-
-        if (isOffScreen(boxes[i])){
-            World.remove(engine.world, boxes[i]);
-            boxes.splice(i,1);
-            i--;
-        }
-    }
+    stroke(128);
+    strokeWeight(3);
+    drawConstraint(constraint1);
+    drawConstraint(constraint2);
+    drawConstraint(constraint3);
 
     fill(125);
-    drawVertices(ground1.vertices);
-    drawVertices(ground2.vertices);
+    drawVertices(ground.vertices);
 
 
 }
@@ -77,6 +121,25 @@ function drawVertices(vertices){
         vertex(vertices[i].x, vertices[i].y);
     }
     endShape(CLOSE);
+}
+
+function drawConstraint(constraint){
+    var offsetA = constraint.pointA;
+    var posA = {x:0, y:0};
+    if (constraint.bodyA){
+        posA = constraint.bodyA.position;
+    }
+    var offsetB = constraint.pointB;
+    var posB = {x:0, y:0};
+    if (constraint.bodyB){
+        posB = constraint.bodyB.position;
+    }
+    line(
+        posA.x + offsetA.x,
+        posA.y + offsetA.y,
+        posB.x + offsetB.x,
+        posB.y + offsetB.y
+    );
 }
 
 
