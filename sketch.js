@@ -22,13 +22,13 @@ function setup(){
     engine = Engine.create();
 
     box1 = Bodies.rectangle(200,200, 80, 80, {restitution: 0.8, friction: 0.01});
-    // polygon = Bodies.polygon(550, 0, 7, 15, {restitution: 0.8, friction: 0.01});
-    // circle = Bodies.circle(500,0,10, {restitution: 0.8, friction: 0.01});
+    polygon = Bodies.polygon(300, 0, 7, 30, {restitution: 0.8, friction: 0.01});
+    circle = Bodies.circle(500,0,10, {restitution: 0.8, friction: 0.01});
 
     ground1 = Bodies.rectangle(100,200,500,10, {isStatic: true, angle:Math.PI*0.06});
     ground2 = Bodies.rectangle(500,500,500,10, {isStatic: true, angle:Math.PI*-0.06});
      
-    World.add(engine.world, [box1, ground1, ground2]);
+    World.add(engine.world, [box1, polygon, ground1, ground2]);
 
 }
 
@@ -36,9 +36,11 @@ function draw(){
     background(0);
     Engine.update(engine);  
 
-    fill(255);
+    fill("red");
     drawVertices(box1.vertices);
+    drawVertices(polygon.vertices);
 
+   fill(255);
    generateObject(width/2,0);
 
     for (var i =0; i<boxes.length; i++){
